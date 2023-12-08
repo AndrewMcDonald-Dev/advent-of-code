@@ -19,10 +19,11 @@ fn main() {
 
 fn parse(input: &str) -> Network {
     let mut map: HashMap<String, (String, String)> = HashMap::new();
-    let (instructions, nodes) = input.split_once('\n').unwrap();
+    let mut lines = input.trim().lines();
+    let instructions = lines.next().unwrap();
 
     let reg = Regex::new(r"([A-Z]{3}) = \(([A-Z]{3}), ([A-Z]{3})\)").unwrap();
-    for node in nodes.trim().lines() {
+    for node in lines.skip(1) {
         let (_, [node_name, element_1, element_2]) = reg.captures(node).unwrap().extract();
         map.insert(
             node_name.to_string(),
@@ -94,20 +95,12 @@ fn lcm(first: usize, second: usize) -> usize {
     first * second / gcd(first, second)
 }
 
-fn gcd(first: usize, second: usize) -> usize {
-    let mut max = first;
-    let mut min = second;
-    if min > max {
-        std::mem::swap(&mut max, &mut min);
-    }
-
-    loop {
-        let res = max % min;
-        if res == 0 {
-            return min;
+fn gcd(mut n: usize, mut m: usize) -> usize {
+    while m != 0 {
+        if m < n {
+            std::mem::swap(&mut n, &mut m);
         }
-
-        max = min;
-        min = res;
+        m %= n;
     }
+    n
 }
