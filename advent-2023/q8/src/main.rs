@@ -1,3 +1,4 @@
+use regex::Regex;
 use std::{collections::HashMap, fs};
 
 type Map = HashMap<String, (String, String)>;
@@ -17,13 +18,13 @@ fn main() {
 }
 
 fn parse(input: &str) -> Network {
+    let mut map: HashMap<String, (String, String)> = HashMap::new();
     let (instructions, nodes) = input.split_once("\n").unwrap();
 
-    let mut map: HashMap<String, (String, String)> = HashMap::new();
     for node in nodes.trim().lines() {
         let (node_name, els) = node.split_once(" = ").unwrap();
-        let elements = els.replace(" (", "").replace(")", "");
-        let (el1, el2) = elements.split_once(", ").unwrap();
+        let reg = Regex::new(r"\(([A-Z]{3}), ([A-Z]{3})\)").unwrap();
+        let (_, [el1, el2]) = reg.captures(els).unwrap().extract();
         map.insert(node_name.to_string(), (el1.to_string(), el2.to_string()));
     }
 
