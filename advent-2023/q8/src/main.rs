@@ -19,10 +19,10 @@ fn main() {
 
 fn parse(input: &str) -> Network {
     let mut map: HashMap<String, (String, String)> = HashMap::new();
-    let (instructions, nodes) = input.split_once("\n").unwrap();
+    let (instructions, nodes) = input.split_once('\n').unwrap();
 
+    let reg = Regex::new(r"([A-Z]{3}) = \(([A-Z]{3}), ([A-Z]{3})\)").unwrap();
     for node in nodes.trim().lines() {
-        let reg = Regex::new(r"([A-Z]{3}) = \(([A-Z]{3}), ([A-Z]{3})\)").unwrap();
         let (_, [node_name, element_1, element_2]) = reg.captures(node).unwrap().extract();
         map.insert(
             node_name.to_string(),
@@ -59,14 +59,14 @@ fn pt2(network: &Network) -> usize {
     let mut cursors: Vec<&String> = network
         .map
         .keys()
-        .filter(|key| key.ends_with("A"))
+        .filter(|key| key.ends_with('A'))
         .collect();
 
     let instruction_counts: Vec<usize> = cursors
         .iter_mut()
         .map(|cursor| {
             let mut i: usize = 0;
-            while !cursor.ends_with("Z") {
+            while !cursor.ends_with('Z') {
                 for instruction in network.instructions.chars() {
                     let (left, right) = network.map.get(&cursor.to_owned()).unwrap();
                     match instruction {
@@ -98,9 +98,7 @@ fn gcd(first: usize, second: usize) -> usize {
     let mut max = first;
     let mut min = second;
     if min > max {
-        let val = max;
-        max = min;
-        min = val;
+        std::mem::swap(&mut max, &mut min);
     }
 
     loop {
