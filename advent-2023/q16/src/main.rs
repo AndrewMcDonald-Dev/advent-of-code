@@ -1,3 +1,4 @@
+use core::fmt;
 use std::{fs, time::Instant};
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, PartialOrd, Ord)]
@@ -18,6 +19,18 @@ enum Direction {
     East,
     South,
     West,
+}
+
+impl std::fmt::Display for Direction {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let symbol = match self {
+            Direction::North => '^',
+            Direction::East => '>',
+            Direction::South => 'v',
+            Direction::West => '<',
+        };
+        write!(f, "{}", symbol)
+    }
 }
 
 enum Tile {
@@ -198,6 +211,24 @@ fn part_2(input: &str) -> usize {
 }
 
 fn main() {
+    // Charlie's Input
+    let input = fs::read_to_string("message.txt").expect("Could not find file.");
+
+    println!("--- Day 16: The Floor Will Be Lava ---");
+    let now = Instant::now();
+    println!(
+        "Part 1: {} | Elapsed: {:.2?}",
+        part_1(&input),
+        now.elapsed()
+    );
+    let now = Instant::now();
+    println!(
+        "Part 2: {} | Elapsed: {:.2?}",
+        part_2(&input),
+        now.elapsed()
+    );
+
+    // Andrew's Input
     let input = fs::read_to_string("in.dat").expect("Could not find file.");
 
     println!("--- Day 16: The Floor Will Be Lava ---");
