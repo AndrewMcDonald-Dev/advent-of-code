@@ -9,7 +9,7 @@ fn part_1(input: &str) -> usize {
             let _ = next_number(&mut bytes);
 
             while let Some(value) = next_number(&mut bytes) {
-                let value = value;
+                // let value = value;
                 match bytes.next().unwrap() {
                     b'r' if value > 12 => return 0,
                     b'g' if value > 13 => return 0,
