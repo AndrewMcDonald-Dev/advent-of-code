@@ -2,7 +2,7 @@ use std::{collections::HashMap, fs, time::Instant};
 
 use regex::Regex;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum Category {
     X,
     M,
@@ -11,7 +11,7 @@ enum Category {
 }
 
 impl Category {
-    fn map(category: &str) -> Self {
+    fn from_str(category: &str) -> Self {
         match category {
             "x" => Category::X,
             "m" => Category::M,
@@ -20,9 +20,18 @@ impl Category {
             _ => panic!("Bad input to map category."),
         }
     }
+    fn to_str(category: &Category) -> String {
+        match category {
+            Category::X => "x",
+            Category::M => "m",
+            Category::A => "a",
+            Category::S => "s",
+        }
+        .to_string()
+    }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Filter {
     gtr: bool,
     op1: Category,
@@ -71,7 +80,26 @@ impl Filter {
             .unwrap();
         let dst = filter_capture.get(4).map_or("", |m| m.as_str());
 
-        Filter::new(gtr, Category::map(op1), op2, dst)
+        Filter::new(gtr, Category::from_str(op1), op2, dst)
+    }
+
+    fn constrain(&self, aff: bool, dom: &mut Vec<Vec<bool>>) {
+        let set = &mut dom["xmas".find(&Category::to_str(&self.op1)).unwrap()];
+        let r = if aff {
+            if self.gtr {
+                1..=self.op2
+            } else {
+                self.op2..=4000
+            }
+        } else if self.gtr {
+            self.op2 + 1..=4000
+        } else {
+            1..=self.op2 - 1
+        };
+
+        for i in r {
+            set[i] = false;
+        }
     }
 }
 
@@ -211,6 +239,45 @@ impl System {
             }
         }
     }
+
+    /// For every accept the number of unique part evaluations that can lead to that accept state
+    /// are counted. The total number is then return.
+    fn permute_possiblities(&self, key: &str, mut seq: Vec<(Filter, bool)>) -> usize {
+        match key {
+            "A" => {
+                let mut permutation = (0..4)
+                    .map(|_| {
+                        let mut vec = vec![true; 4001];
+                        vec[0] = false;
+                        vec
+                    })
+                    .collect();
+
+                for (filter, is_accepted) in seq {
+                    filter.constrain(is_accepted, &mut permutation);
+                }
+
+                permutation
+                    .iter()
+                    .map(|v| v.iter().filter(|f| **f).count())
+                    .product()
+            }
+            "R" => 0,
+            _ => {
+                let workflow = &self.workflows[key];
+                let mut n = 0;
+
+                for filter in &workflow.filters {
+                    let mut seq_clone = seq.clone();
+                    seq_clone.push((filter.clone(), true));
+                    n += self.permute_possiblities(&filter.dst, seq_clone);
+                    seq.push((filter.clone(), false));
+                }
+                n += self.permute_possiblities(&workflow.dest, seq);
+                n
+            }
+        }
+    }
 }
 
 fn part_1(input: &str) -> usize {
@@ -231,22 +298,29 @@ fn part_1(input: &str) -> usize {
     total
 }
 
+fn part_2(input: &str) -> usize {
+    let mut split = input.split("\n\n");
+    let system = System::parse(split.next().unwrap());
+
+    system.permute_possiblities("in", Vec::new())
+}
+
 fn main() {
     let input = fs::read_to_string("in.dat").expect("Could not find file");
 
-    println!("{:-<14} Day 19: Aplenty {:->14}", "", "");
+    println!("{:-<15} Day 19: Aplenty {:->15}", "", "");
     let before = Instant::now();
     println!(
-        "Part 1: {:<14} | Elapsed Time: {:.2?}",
+        "Part 1: {:<15} | Elapsed Time: {:.2?}",
         part_1(&input),
         before.elapsed()
     );
-    // let before = Instant::now();
-    // println!(
-    //     "Part 2: {:<14} | Elapsed Time: {:.2?}",
-    //     part_2(parse(&input)),
-    //     before.elapsed()
-    // );
+    let before = Instant::now();
+    println!(
+        "Part 2: {:<15} | Elapsed Time: {:.2?}",
+        part_2(&input),
+        before.elapsed()
+    );
 }
 
 #[cfg(test)]
