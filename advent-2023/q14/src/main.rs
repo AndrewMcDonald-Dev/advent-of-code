@@ -65,6 +65,7 @@ fn clockwise(grid: &mut Vec<Vec<Tile>>) {
     *grid = rotated;
 }
 
+#[inline]
 fn cycle(grid: &mut Vec<Vec<Tile>>) {
     for _ in 0..4 {
         slide_north(grid);
